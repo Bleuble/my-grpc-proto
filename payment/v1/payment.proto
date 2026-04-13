@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package payment.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// Updated with your username
+option go_package = "github.com/Bleuble/my-grpc-generated/payment/v1;paymentv1";
+
+service PaymentService {
+  rpc ProcessPayment(PaymentRequest) returns (PaymentResponse);
+}
+
+message PaymentRequest {
+  string order_id = 1;
+  double amount = 2;
+  string currency = 3;
+}
+
+message PaymentResponse {
+  string transaction_id = 1;
+  string status = 2;
+  google.protobuf.Timestamp processed_at = 3;
+}

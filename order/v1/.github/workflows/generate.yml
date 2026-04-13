@@ -1,0 +1,48 @@
+name: Remote Proto Generation
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository A (Protos)
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Install Protoc and Plugins
+        run: |
+          sudo apt-get install -y protobuf-compiler
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Generate Go Code
+        run: |
+          mkdir -p ./gen
+          # Note: We use -I. to tell protoc to look for imports in the current directory
+          protoc -I. --go_out=./gen --go_opt=paths=source_relative \
+                 --go-grpc_out=./gen --go-grpc_opt=paths=source_relative \
+                 payment/v1/payment.proto order/v1/order.proto
+
+      - name: Push to Repository B (Generated)
+        env:
+          GH_TOKEN: ${{ secrets.PROTO_GEN_TOKEN }}
+        run: |
+          cd gen
+          git init
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          # This connects to your second repo
+          git remote add origin https://x-access-token:${GH_TOKEN}@github.com/Bleuble/my-grpc-generated.git
+          git add .
+          git commit -m "Generated code from proto push" || echo "No changes to commit"
+          git branch -M main
+          git push -f origin main
