@@ -38,16 +38,12 @@ jobs:
           go mod tidy
 
       - name: Push to Repository B (Generated)
+        uses: cpina/github-action-push-to-another-repository@main
         env:
-          GH_TOKEN: ${{ secrets.PROTO_GEN_TOKEN }}
-        run: |
-          cd gen
-          git init
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          # UPDATED LINE BELOW:
-          git remote add origin https://Bleuble:${GH_TOKEN}@github.com/Bleuble/my-grpc-generated.git
-          git add .
-          git commit -m "Generated code from proto push" || echo "No changes"
-          git branch -M main
-          git push -f origin main
+          API_TOKEN_GITHUB: ${{ secrets.PROTO_GEN_TOKEN }}
+        with:
+          source-directory: 'gen'
+          destination-github-username: 'Bleuble'
+          destination-repository-name: 'my-grpc-generated'
+          user-email: github-actions@github.com
+          target-branch: main
