@@ -4,11 +4,20 @@ package payment.v1;
 
 import "google/protobuf/timestamp.proto";
 
-// Updated with your username
+
 option go_package = "github.com/Bleuble/my-grpc-generated/payment/v1;paymentv1";
 
 service PaymentService {
   rpc ProcessPayment(PaymentRequest) returns (PaymentResponse);
+  rpc ListPayments(ListPaymentsRequest) returns (ListPaymentsResponse);
+}
+
+message ListPaymentsRequest {
+  string status = 1; // "Authorized" or "Declined"
+}
+
+message ListPaymentsResponse {
+  repeated PaymentResponse payments = 1;
 }
 
 message PaymentRequest {
